@@ -1,29 +1,29 @@
 /****************************************************************************** 
 hardware.cpp
-MicroOLED Arduino Library Hardware Interface
+TeensyView Arduino Library Hardware Interface
 
-Jim Lindblom @ SparkFun Electronics
-October 26, 2014
+Marshall Taylor @ SparkFun Electronics, December 6, 2016
+https://github.com/sparkfun/SparkFun_TeensyView_Arduino_Library
+
+This has been modified from the SFE_MicroOLED library, Original contributors:
+
+Jim Lindblom @ SparkFun Electronics, October 26, 2014
 https://github.com/sparkfun/Micro_OLED_Breakout/tree/master/Firmware/Arduino/libraries/SFE_MicroOLED
 
-Modified by:
-Emil Varughese @ Edwin Robotics Pvt. Ltd.
-July 27, 2015
+Emil Varughese @ Edwin Robotics Pvt. Ltd. July 27, 2015
 https://github.com/emil01/SparkFun_Micro_OLED_Arduino_Library/
 
-This file defines the hardware interface(s) for the Micro OLED Breakout. Those
-interfaces include SPI, I2C and a parallel bus.
+GeekAmmo, (https://github.com/geekammo/MicroView-Arduino-Library)
+
+Released under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+*****This file defines the hardware interface(s) for the TeensyView.*****
 
 Development environment specifics:
-Arduino 1.0.5
-Arduino Pro 3.3V
-Micro OLED Breakout v1.0
-
-This code was heavily based around the MicroView library, written by GeekAmmo
-(https://github.com/geekammo/MicroView-Arduino-Library), and released under 
-the terms of the GNU General Public License as published by the Free Software 
-Foundation, either version 3 of the License, or (at your option) any later 
-version.
+Arduino IDE 1.6.12
+TeensyView v1.0
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -41,7 +41,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 	Sets up the SPI pins, initializes the Arduino's SPI interface.
 **/
-void MicroOLED::spiSetup()
+void TeensyView::spiSetup()
 {
 	// Initialize the pins:
 	pinMode(csPin, OUTPUT);	// CS is an OUTPUT
@@ -50,6 +50,10 @@ void MicroOLED::spiSetup()
 	//Do alt pin assignment
 	SPI.setMOSI(mosiPin);
 	SPI.setSCK(sckPin);
+	//pinMode(mosiPin, OUTPUT);
+	//pinMode(sckPin, OUTPUT);
+	//digitalWrite(sckPin, HIGH);
+	//while(1);
 	
 	SPI.begin();
 	
@@ -61,9 +65,9 @@ void MicroOLED::spiSetup()
 	Use the SPI library to transfer a byte. Only used for data OUTPUT.
 	This function does not toggle the CS pin. Do that before and after!
 **/
-void MicroOLED::spiTransfer(byte data)
+void TeensyView::spiTransfer(byte data)
 {
-	SPI.beginTransaction(SPISettings(40000000, MSBFIRST, SPI_MODE0));
+	SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
     digitalWrite(csPin, LOW);
 	SPI.transfer(data);	
     digitalWrite(csPin, HIGH);

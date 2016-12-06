@@ -1,29 +1,29 @@
 /******************************************************************************
-SFE_MicroOLED.cpp
-Main source code for the MicroOLED Arduino Library
+TeensyView.cpp
+Main source code for the TeensyView Library
 
-Jim Lindblom @ SparkFun Electronics
-October 26, 2014
+Marshall Taylor @ SparkFun Electronics, December 6, 2016
+https://github.com/sparkfun/SparkFun_TeensyView_Arduino_Library
+
+This has been modified from the SFE_MicroOLED library, Original contributors:
+
+Jim Lindblom @ SparkFun Electronics, October 26, 2014
 https://github.com/sparkfun/Micro_OLED_Breakout/tree/master/Firmware/Arduino/libraries/SFE_MicroOLED
 
-Modified by:
-Emil Varughese @ Edwin Robotics Pvt. Ltd.
-July 27, 2015
+Emil Varughese @ Edwin Robotics Pvt. Ltd. July 27, 2015
 https://github.com/emil01/SparkFun_Micro_OLED_Arduino_Library/
 
-This file defines the hardware interface(s) for the Micro OLED Breakout. Those
-interfaces include SPI, I2C and a parallel bus.
+GeekAmmo, (https://github.com/geekammo/MicroView-Arduino-Library)
+
+Released under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+*****This file defines the hardware interface(s) for the TeensyView.*****
 
 Development environment specifics:
-Arduino 1.0.5
-Arduino Pro 3.3V
-Micro OLED Breakout v1.0
-
-This code was heavily based around the MicroView library, written by GeekAmmo
-(https://github.com/geekammo/MicroView-Arduino-Library), and released under
-the terms of the GNU General Public License as published by the Free Software
-Foundation, either version 3 of the License, or (at your option) any later
-version.
+Arduino IDE 1.6.12
+TeensyView v1.0
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -34,16 +34,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 #include <Arduino.h>
-#ifdef __AVR__
-//	#include <avr/pgmspace.h>
-#else
-//	#include <pgmspace.h>
-#endif
-#include "TeensyView.h"
 
-// This fixed ugly GCC warning "only initialized variables can be placed into program memory area"
-#undef PROGMEM
-#define PROGMEM __attribute__((section(".progmem.data")))
+#include "TeensyView.h"
 
 // Add header of the fonts here.  Remove as many as possible to conserve FLASH memory.
 #include "font5x7.h"
@@ -56,14 +48,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 // Add the font name as declared in the header file.  Remove as many as possible to conserve FLASH memory.
-const unsigned char *MicroOLED::fontsPointer[]={
+const unsigned char *TeensyView::fontsPointer[]={
 	font5x7
 	,font8x16
 	,sevensegment
 	,fontlargenumber
 };
 
-/** \brief MicroOLED screen buffer.
+/** \brief TeensyView screen buffer.
 
 Page buffer 64 x 48 divided by 8 = 384 bytes
 Page buffer is required because in SPI mode, the host cannot read the SSD1306's GDRAM of the controller.  This page buffer serves as a scratch RAM for graphical functions.  All drawing function will first be drawn on this page buffer, only upon calling display() function will transfer the page buffer to the actual LCD controller's memory.
@@ -135,12 +127,12 @@ static uint8_t screenmemory [512] =
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-/** \brief MicroOLED Constructor -- SPI Mode
+/** \brief TeensyView Constructor -- SPI Mode
 
-	Setup the MicroOLED class, configure the display to be controlled via a
+	Setup the TeensyView class, configure the display to be controlled via a
 	SPI interface.
 */
-MicroOLED::MicroOLED(uint8_t rst, uint8_t dc, uint8_t cs, uint8_t sck, uint8_t mosi)
+TeensyView::TeensyView(uint8_t rst, uint8_t dc, uint8_t cs, uint8_t sck, uint8_t mosi)
 {
 	// Assign each of the parameters to a private class variable.
 	rstPin = rst;
@@ -150,11 +142,11 @@ MicroOLED::MicroOLED(uint8_t rst, uint8_t dc, uint8_t cs, uint8_t sck, uint8_t m
 	mosiPin = mosi;
 }
 
-/** \brief Initialisation of MicroOLED Library.
+/** \brief Initialisation of TeensyView Library.
 
     Setup IO pins for SPI port then send initialisation commands to the SSD1306 controller inside the OLED.
 */
-void MicroOLED::begin()
+void TeensyView::begin()
 {
 	// default 5x7 font
 	setFontType(0);
@@ -228,7 +220,7 @@ void MicroOLED::begin()
 	to send the data. For I2C and Parallel we use the write functions
 	defined in hardware.cpp to send the data.
 */
-void MicroOLED::command(uint8_t c) {
+void TeensyView::command(uint8_t c) {
 
 	digitalWrite(dcPin, LOW);;	// DC pin LOW for a command
 	spiTransfer(c);			// Transfer the command byte
@@ -241,7 +233,7 @@ void MicroOLED::command(uint8_t c) {
 	to send the data. For I2C and Parallel we use the write functions
 	defined in hardware.cpp to send the data.
 */
-void MicroOLED::data(uint8_t c) {
+void TeensyView::data(uint8_t c) {
 
 	digitalWrite(dcPin, HIGH);	// DC HIGH for a data byte
 	spiTransfer(c); 		// Transfer the data byte
@@ -251,7 +243,7 @@ void MicroOLED::data(uint8_t c) {
 
     Send page address command and address to the SSD1306 OLED controller.
 */
-void MicroOLED::setPageAddress(uint8_t add) {
+void TeensyView::setPageAddress(uint8_t add) {
 	add=0xb0|add;
 	command(add);
 	return;
@@ -261,7 +253,7 @@ void MicroOLED::setPageAddress(uint8_t add) {
 
     Send column address command and address to the SSD1306 OLED controller.
 */
-void MicroOLED::setColumnAddress(uint8_t add) {
+void TeensyView::setColumnAddress(uint8_t add) {
 	//command((0x10|(add>>4))+0x02);
 	//command((0x0f&add));
 	command(0x21);
@@ -275,7 +267,7 @@ void MicroOLED::setColumnAddress(uint8_t add) {
 
     To clear GDRAM inside the LCD controller, pass in the variable mode = ALL and to clear screen page buffer pass in the variable mode = PAGE.
 */
-void MicroOLED::clear(uint8_t mode) {
+void TeensyView::clear(uint8_t mode) {
 	//	uint8_t page=6, col=0x40;
 	if (mode==ALL) {
 		for (int i=0;i<8; i++) {
@@ -297,7 +289,7 @@ void MicroOLED::clear(uint8_t mode) {
 
 	To clear GDRAM inside the LCD controller, pass in the variable mode = ALL with c character and to clear screen page buffer, pass in the variable mode = PAGE with c character.
 */
-void MicroOLED::clear(uint8_t mode, uint8_t c) {
+void TeensyView::clear(uint8_t mode, uint8_t c) {
 	//uint8_t page=6, col=0x40;
 	if (mode==ALL) {
 		for (int i=0;i<8; i++) {
@@ -319,7 +311,7 @@ void MicroOLED::clear(uint8_t mode, uint8_t c) {
 
     The WHITE color of the display will turn to BLACK and the BLACK will turn to WHITE.
 */
-void MicroOLED::invert(boolean inv) {
+void TeensyView::invert(boolean inv) {
 	if (inv)
 	command(INVERTDISPLAY);
 	else
@@ -330,7 +322,7 @@ void MicroOLED::invert(boolean inv) {
 
     OLED contract value from 0 to 255. Note: Contrast level is not very obvious.
 */
-void MicroOLED::contrast(uint8_t contrast) {
+void TeensyView::contrast(uint8_t contrast) {
 	command(SETCONTRAST);			// 0x81
 	command(contrast);
 }
@@ -339,7 +331,7 @@ void MicroOLED::contrast(uint8_t contrast) {
 
     Bulk move the screen buffer to the SSD1306 controller's memory so that images/graphics drawn on the screen buffer will be displayed on the OLED.
 */
-void MicroOLED::display(void) {
+void TeensyView::display(void) {
 	uint8_t i, j;
 
 	for (i=0; i<6; i++) {
@@ -351,7 +343,7 @@ void MicroOLED::display(void) {
 	}
 }
 
-void MicroOLED::display(uint8_t i) {
+void TeensyView::display(uint8_t i) {
 	uint8_t j;
 
 	setPageAddress(i);
@@ -365,7 +357,7 @@ void MicroOLED::display(uint8_t i) {
 
     Arduino's print overridden so that we can use uView.print().
 */
-size_t MicroOLED::write(uint8_t c) {
+size_t TeensyView::write(uint8_t c) {
 	if (c == '\n') {
 		cursorY += fontHeight;
 		cursorX  = 0;
@@ -385,9 +377,9 @@ size_t MicroOLED::write(uint8_t c) {
 
 /** \brief Set cursor position.
 
-MicroOLED's cursor position to x,y.
+TeensyView's cursor position to x,y.
 */
-void MicroOLED::setCursor(uint8_t x, uint8_t y) {
+void TeensyView::setCursor(uint8_t x, uint8_t y) {
 	cursorX=x;
 	cursorY=y;
 }
@@ -396,7 +388,7 @@ void MicroOLED::setCursor(uint8_t x, uint8_t y) {
 
 Draw pixel using the current fore color and current draw mode in the screen buffer's x,y position.
 */
-void MicroOLED::pixel(uint8_t x, uint8_t y) {
+void TeensyView::pixel(uint8_t x, uint8_t y) {
 	pixel(x,y,foreColor,drawMode);
 }
 
@@ -404,7 +396,7 @@ void MicroOLED::pixel(uint8_t x, uint8_t y) {
 
 Draw color pixel in the screen buffer's x,y position with NORM or XOR draw mode.
 */
-void MicroOLED::pixel(uint8_t x, uint8_t y, uint8_t color, uint8_t mode) {
+void TeensyView::pixel(uint8_t x, uint8_t y, uint8_t color, uint8_t mode) {
 	if ((x<0) ||  (x>=LCDWIDTH) || (y<0) || (y>=LCDHEIGHT))
 	return;
 
@@ -424,7 +416,7 @@ void MicroOLED::pixel(uint8_t x, uint8_t y, uint8_t color, uint8_t mode) {
 
 Draw line using current fore color and current draw mode from x0,y0 to x1,y1 of the screen buffer.
 */
-void MicroOLED::line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
+void TeensyView::line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
 	line(x0,y0,x1,y1,foreColor,drawMode);
 }
 
@@ -432,7 +424,7 @@ void MicroOLED::line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
 
 Draw line using color and mode from x0,y0 to x1,y1 of the screen buffer.
 */
-void MicroOLED::line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color, uint8_t mode) {
+void TeensyView::line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color, uint8_t mode) {
 	uint8_t steep = abs(y1 - y0) > abs(x1 - x0);
 	if (steep) {
 		swap(x0, y0);
@@ -474,7 +466,7 @@ void MicroOLED::line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t col
 
 Draw horizontal line using current fore color and current draw mode from x,y to x+width,y of the screen buffer.
 */
-void MicroOLED::lineH(uint8_t x, uint8_t y, uint8_t width) {
+void TeensyView::lineH(uint8_t x, uint8_t y, uint8_t width) {
 	line(x,y,x+width,y,foreColor,drawMode);
 }
 
@@ -482,7 +474,7 @@ void MicroOLED::lineH(uint8_t x, uint8_t y, uint8_t width) {
 
 Draw horizontal line using color and mode from x,y to x+width,y of the screen buffer.
 */
-void MicroOLED::lineH(uint8_t x, uint8_t y, uint8_t width, uint8_t color, uint8_t mode) {
+void TeensyView::lineH(uint8_t x, uint8_t y, uint8_t width, uint8_t color, uint8_t mode) {
 	line(x,y,x+width,y,color,mode);
 }
 
@@ -490,7 +482,7 @@ void MicroOLED::lineH(uint8_t x, uint8_t y, uint8_t width, uint8_t color, uint8_
 
 Draw vertical line using current fore color and current draw mode from x,y to x,y+height of the screen buffer.
 */
-void MicroOLED::lineV(uint8_t x, uint8_t y, uint8_t height) {
+void TeensyView::lineV(uint8_t x, uint8_t y, uint8_t height) {
 	line(x,y,x,y+height,foreColor,drawMode);
 }
 
@@ -498,7 +490,7 @@ void MicroOLED::lineV(uint8_t x, uint8_t y, uint8_t height) {
 
 Draw vertical line using color and mode from x,y to x,y+height of the screen buffer.
 */
-void MicroOLED::lineV(uint8_t x, uint8_t y, uint8_t height, uint8_t color, uint8_t mode) {
+void TeensyView::lineV(uint8_t x, uint8_t y, uint8_t height, uint8_t color, uint8_t mode) {
 	line(x,y,x,y+height,color,mode);
 }
 
@@ -506,7 +498,7 @@ void MicroOLED::lineV(uint8_t x, uint8_t y, uint8_t height, uint8_t color, uint8
 
 Draw rectangle using current fore color and current draw mode from x,y to x+width,y+height of the screen buffer.
 */
-void MicroOLED::rect(uint8_t x, uint8_t y, uint8_t width, uint8_t height) {
+void TeensyView::rect(uint8_t x, uint8_t y, uint8_t width, uint8_t height) {
 	rect(x,y,width,height,foreColor,drawMode);
 }
 
@@ -514,7 +506,7 @@ void MicroOLED::rect(uint8_t x, uint8_t y, uint8_t width, uint8_t height) {
 
 Draw rectangle using color and mode from x,y to x+width,y+height of the screen buffer.
 */
-void MicroOLED::rect(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t color , uint8_t mode) {
+void TeensyView::rect(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t color , uint8_t mode) {
 	uint8_t tempHeight;
 
 	lineH(x,y, width, color, mode);
@@ -534,7 +526,7 @@ void MicroOLED::rect(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_
 
 Draw filled rectangle using current fore color and current draw mode from x,y to x+width,y+height of the screen buffer.
 */
-void MicroOLED::rectFill(uint8_t x, uint8_t y, uint8_t width, uint8_t height) {
+void TeensyView::rectFill(uint8_t x, uint8_t y, uint8_t width, uint8_t height) {
 	rectFill(x,y,width,height,foreColor,drawMode);
 }
 
@@ -542,7 +534,7 @@ void MicroOLED::rectFill(uint8_t x, uint8_t y, uint8_t width, uint8_t height) {
 
 Draw filled rectangle using color and mode from x,y to x+width,y+height of the screen buffer.
 */
-void MicroOLED::rectFill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t color , uint8_t mode) {
+void TeensyView::rectFill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t color , uint8_t mode) {
 	// TODO - need to optimise the memory map draw so that this function will not call pixel one by one
 	for (int i=x; i<x+width;i++) {
 		lineV(i,y, height, color, mode);
@@ -553,7 +545,7 @@ void MicroOLED::rectFill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, ui
 
     Draw circle with radius using current fore color and current draw mode at x,y of the screen buffer.
 */
-void MicroOLED::circle(uint8_t x0, uint8_t y0, uint8_t radius) {
+void TeensyView::circle(uint8_t x0, uint8_t y0, uint8_t radius) {
 	circle(x0,y0,radius,foreColor,drawMode);
 }
 
@@ -561,7 +553,7 @@ void MicroOLED::circle(uint8_t x0, uint8_t y0, uint8_t radius) {
 
 Draw circle with radius using color and mode at x,y of the screen buffer.
 */
-void MicroOLED::circle(uint8_t x0, uint8_t y0, uint8_t radius, uint8_t color, uint8_t mode) {
+void TeensyView::circle(uint8_t x0, uint8_t y0, uint8_t radius, uint8_t color, uint8_t mode) {
 	//TODO - find a way to check for no overlapping of pixels so that XOR draw mode will work perfectly
 	int8_t f = 1 - radius;
 	int8_t ddF_x = 1;
@@ -601,7 +593,7 @@ void MicroOLED::circle(uint8_t x0, uint8_t y0, uint8_t radius, uint8_t color, ui
 
     Draw filled circle with radius using current fore color and current draw mode at x,y of the screen buffer.
 */
-void MicroOLED::circleFill(uint8_t x0, uint8_t y0, uint8_t radius) {
+void TeensyView::circleFill(uint8_t x0, uint8_t y0, uint8_t radius) {
 	circleFill(x0,y0,radius,foreColor,drawMode);
 }
 
@@ -609,7 +601,7 @@ void MicroOLED::circleFill(uint8_t x0, uint8_t y0, uint8_t radius) {
 
     Draw filled circle with radius using color and mode at x,y of the screen buffer.
 */
-void MicroOLED::circleFill(uint8_t x0, uint8_t y0, uint8_t radius, uint8_t color, uint8_t mode) {
+void TeensyView::circleFill(uint8_t x0, uint8_t y0, uint8_t radius, uint8_t color, uint8_t mode) {
 	// TODO - - find a way to check for no overlapping of pixels so that XOR draw mode will work perfectly
 	int8_t f = 1 - radius;
 	int8_t ddF_x = 1;
@@ -649,7 +641,7 @@ void MicroOLED::circleFill(uint8_t x0, uint8_t y0, uint8_t radius, uint8_t color
 
     The height of the LCD return as byte.
 */
-uint8_t MicroOLED::getLCDHeight(void) {
+uint8_t TeensyView::getLCDHeight(void) {
 	return LCDHEIGHT;
 }
 
@@ -657,7 +649,7 @@ uint8_t MicroOLED::getLCDHeight(void) {
 
     The width of the LCD return as byte.
 */
-uint8_t MicroOLED::getLCDWidth(void) {
+uint8_t TeensyView::getLCDWidth(void) {
 	return LCDWIDTH;
 }
 
@@ -665,7 +657,7 @@ uint8_t MicroOLED::getLCDWidth(void) {
 
     The cucrrent font's width return as byte.
 */
-uint8_t MicroOLED::getFontWidth(void) {
+uint8_t TeensyView::getFontWidth(void) {
 	return fontWidth;
 }
 
@@ -673,7 +665,7 @@ uint8_t MicroOLED::getFontWidth(void) {
 
     The current font's height return as byte.
 */
-uint8_t MicroOLED::getFontHeight(void) {
+uint8_t TeensyView::getFontHeight(void) {
 	return fontHeight;
 }
 
@@ -681,7 +673,7 @@ uint8_t MicroOLED::getFontHeight(void) {
 
     Return the starting ASCII character of the currnet font, not all fonts start with ASCII character 0. Custom fonts can start from any ASCII character.
 */
-uint8_t MicroOLED::getFontStartChar(void) {
+uint8_t TeensyView::getFontStartChar(void) {
 	return fontStartChar;
 }
 
@@ -689,15 +681,15 @@ uint8_t MicroOLED::getFontStartChar(void) {
 
     Return the total characters of the current font.
 */
-uint8_t MicroOLED::getFontTotalChar(void) {
+uint8_t TeensyView::getFontTotalChar(void) {
 	return fontTotalChar;
 }
 
 /** \brief Get total fonts.
 
-    Return the total number of fonts loaded into the MicroOLED's flash memory.
+    Return the total number of fonts loaded into the TeensyView's flash memory.
 */
-uint8_t MicroOLED::getTotalFonts(void) {
+uint8_t TeensyView::getTotalFonts(void) {
 	return TOTALFONTS;
 }
 
@@ -705,7 +697,7 @@ uint8_t MicroOLED::getTotalFonts(void) {
 
     Return the font type number of the current font.
 */
-uint8_t MicroOLED::getFontType(void) {
+uint8_t TeensyView::getFontType(void) {
 	return fontType;
 }
 
@@ -713,7 +705,7 @@ uint8_t MicroOLED::getFontType(void) {
 
     Set the current font type number, ie changing to different fonts base on the type provided.
 */
-uint8_t MicroOLED::setFontType(uint8_t type) {
+uint8_t TeensyView::setFontType(uint8_t type) {
 	if ((type>=TOTALFONTS) || (type<0))
 	return false;
 
@@ -730,7 +722,7 @@ uint8_t MicroOLED::setFontType(uint8_t type) {
 
     Set the current draw's color. Only WHITE and BLACK available.
 */
-void MicroOLED::setColor(uint8_t color) {
+void TeensyView::setColor(uint8_t color) {
 	foreColor=color;
 }
 
@@ -738,7 +730,7 @@ void MicroOLED::setColor(uint8_t color) {
 
     Set current draw mode with NORM or XOR.
 */
-void MicroOLED::setDrawMode(uint8_t mode) {
+void TeensyView::setDrawMode(uint8_t mode) {
 	drawMode=mode;
 }
 
@@ -746,7 +738,7 @@ void MicroOLED::setDrawMode(uint8_t mode) {
 
     Draw character c using current color and current draw mode at x,y.
 */
-void  MicroOLED::drawChar(uint8_t x, uint8_t y, uint8_t c) {
+void  TeensyView::drawChar(uint8_t x, uint8_t y, uint8_t c) {
 	drawChar(x,y,c,foreColor,drawMode);
 }
 
@@ -754,7 +746,7 @@ void  MicroOLED::drawChar(uint8_t x, uint8_t y, uint8_t c) {
 
     Draw character c using color and draw mode at x,y.
 */
-void  MicroOLED::drawChar(uint8_t x, uint8_t y, uint8_t c, uint8_t color, uint8_t mode) {
+void  TeensyView::drawChar(uint8_t x, uint8_t y, uint8_t c, uint8_t color, uint8_t mode) {
 	// TODO - New routine to take font of any height, at the moment limited to font height in multiple of 8 pixels
 
 	uint8_t rowsToDraw,row, tempC;
@@ -821,7 +813,7 @@ void  MicroOLED::drawChar(uint8_t x, uint8_t y, uint8_t c, uint8_t color, uint8_
 
     Stop the scrolling of graphics on the OLED.
 */
-void MicroOLED::scrollStop(void){
+void TeensyView::scrollStop(void){
 	command(DEACTIVATESCROLL);
 }
 
@@ -829,7 +821,7 @@ void MicroOLED::scrollStop(void){
 
 Set row start to row stop on the OLED to scroll right. Refer to http://learn.microview.io/intro/general-overview-of-microview.html for explanation of the rows.
 */
-void MicroOLED::scrollRight(uint8_t start, uint8_t stop){
+void TeensyView::scrollRight(uint8_t start, uint8_t stop){
 	if (stop<start)		// stop must be larger or equal to start
 	return;
 	scrollStop();		// need to disable scrolling before starting to avoid memory corrupt
@@ -847,7 +839,7 @@ void MicroOLED::scrollRight(uint8_t start, uint8_t stop){
 
 Flip the graphics on the OLED vertically.
 */
-void MicroOLED::flipVertical(boolean flip) {
+void TeensyView::flipVertical(boolean flip) {
 	if (flip) {
 		command(COMSCANINC);
 	}
@@ -860,7 +852,7 @@ void MicroOLED::flipVertical(boolean flip) {
 
     Flip the graphics on the OLED horizontally.
 */
-void MicroOLED::flipHorizontal(boolean flip) {
+void TeensyView::flipHorizontal(boolean flip) {
 	if (flip) {
 		command(SEGREMAP | 0x0);
 	}
@@ -872,7 +864,7 @@ void MicroOLED::flipHorizontal(boolean flip) {
 /*
 	Return a pointer to the start of the RAM screen buffer for direct access.
 */
-uint8_t *MicroOLED::getScreenBuffer(void) {
+uint8_t *TeensyView::getScreenBuffer(void) {
 	return screenmemory;
 }
 
@@ -880,7 +872,7 @@ uint8_t *MicroOLED::getScreenBuffer(void) {
 Draw Bitmap image on screen. The array for the bitmap can be stored in the Arduino file, so user don't have to mess with the library files.
 To use, create uint8_t array that is 64x48 pixels (384 bytes). Then call .drawBitmap and pass it the array.
 */
-void MicroOLED::drawBitmap(uint8_t * bitArray)
+void TeensyView::drawBitmap(uint8_t * bitArray)
 {
   for (int i=0; i<(LCDWIDTH * LCDHEIGHT / 8); i++)
     screenmemory[i] = bitArray[i];

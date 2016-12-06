@@ -1,19 +1,26 @@
 /******************************************************************************
-<filename>
-<Title>
-<name @ SparkFun Electronics>
-<original creation date>
-<github repository address>
+HighSpeedTest.ino
+Example painting alternating frames to the TeensyView as fast as possible.
 
-<multiline verbose description of file functionality>
+Marshall Taylor @ SparkFun Electronics, December 6, 2016
+https://github.com/sparkfun/SparkFun_TeensyView_Arduino_Library
+
+This example displays alternating 50% black frames as fast as possible, reporting
+time between frames.
+
+Compatible with:
+Teensy LC
+Teensy 3.1
+Teensy 3.2
+Teensy 3.5
+Teensy 3.6
 
 Resources:
-<additional library requirements>
+Requires the Teensy Audio library
 
 Development environment specifics:
-<arduino/development environment version>
-<hardware version>
-<etc>
+Arduino IDE 1.6.12
+TeensyView v1.0
 
 This code is released under the [MIT License](http://opensource.org/licenses/MIT).
 
@@ -28,24 +35,26 @@ Distributed as-is; no warranty is given.
 #include "TeensyView.h"  // Include the SFE_MicroOLED library
 
 //////////////////////////////////
-// MicroOLED Object Declaration //
+// TeensyView Object Declaration //
 //////////////////////////////////
+//Standard
+#define PIN_RESET 15  // Connect RST to pin 15
+#define PIN_DC    5  // Connect DC to pin 5
+#define PIN_CS    10 // Connect CS to pin 10
+#define PIN_SCK   13 // Connect SCK to pin 13
+#define PIN_MOSI  11 // Connect MOSI to pin 11
 
-////Default SPI connections
-//#define PIN_RESET 6  // Connect RST to pin 6
-//#define PIN_DC    5  // Connect DC to pin 5
-//#define PIN_CS    10 // Connect CS to pin 10
-//#define PIN_SCK   13 // Connect SCK to pin 13
-//#define PIN_MOSI  11 // Connect MOSI to pin 11
+//////////////////////////////////
+// TeensyView Object Declaration //
+//////////////////////////////////
+//Alternate (Audio)
+//#define PIN_RESET 2  // Connect RST to pin 2
+//#define PIN_DC    21  // Connect DC to pin 21
+//#define PIN_CS    20 // Connect CS to pin 20
+//#define PIN_SCK   14 // Connect SCK to pin 14
+//#define PIN_MOSI  7  // Connect MOSI to pin 7
 
-//Alternate SPI connections
-#define PIN_RESET 2  // Connect RST to pin 2
-#define PIN_DC    21  // Connect DC to pin 21
-#define PIN_CS    20 // Connect CS to pin 20
-#define PIN_SCK   14 // Connect SCK to pin 14
-#define PIN_MOSI  7  // Connect MOSI to pin 7
-
-MicroOLED oled(PIN_RESET, PIN_DC, PIN_CS, PIN_SCK, PIN_MOSI);
+TeensyView oled(PIN_RESET, PIN_DC, PIN_CS, PIN_SCK, PIN_MOSI);
 
 void setup()
 {
@@ -61,7 +70,8 @@ void setup()
 	// To actually draw anything on the display, you must call the
 	// display() function. 
 	oled.display(); 
-	delay(2000);  
+	delay(2000);
+	Serial.println("STARTED!!!");
 }
 
 uint8_t field1[] = {
@@ -180,19 +190,12 @@ void loop()
 		//Serial.print(", ");
 		//Serial.println(last_time);
 	}
-	oled.command(0xE3);
-	oled.command(0xE3);
-	oled.command(0xE3);
-	oled.command(0xE3);
-	oled.command(0xE3);
-	oled.command(0xE3);
 	oled.setCursor(0,0);
 	oled.print("dt=");
 	oled.print((uint8_t)lastFPS);
 	oled.print("ms");
-	delay(10);
 	oled.display();   
-	delay(23);
+	//delay(23);
 
  
 

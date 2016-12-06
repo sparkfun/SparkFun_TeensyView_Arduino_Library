@@ -3,9 +3,9 @@ SparkFun <PRODUCT NAME> Arduino Library
 
 ![SparkFun Part Name](URL for picture of part)
 
-[*SparkFun Part Name (SKU)*](URL for product on Sparkfun.com)
+[*SparkFun TeensyView (14048)*](https://www.sparkfun.com/products/14048)
 
-<Basic description of the library.>
+This is a modified microOLED library designed for TeensyDuino.
 
 Repository Contents
 -------------------
@@ -26,8 +26,16 @@ Documentation
 Products that use this Library 
 ---------------------------------
 
-* [Part SKU](SparkFun part URL)- Basic part and short description here
-* [Part SKU](SparkFun part URL)- Basic part and short description here
+* [14048](https://www.sparkfun.com/products/14048) - TeensyView product.
+* [13305](https://www.sparkfun.com/products/13305)- Teensy LC
+* [13736](https://www.sparkfun.com/products/13736)- Teensy 3.2
+* [14055](https://www.sparkfun.com/products/14055)- Teensy 3.5
+* [14057](https://www.sparkfun.com/products/14057)- Teensy 3.6
+* [12767](https://www.sparkfun.com/products/12767)- Teensy Audio Board
+* [13311](https://www.sparkfun.com/products/13311)- Teensy 3.1 XBee Adapter
+* [13925](https://www.sparkfun.com/products/13925)- Teensy Header Kit
+* [13996](https://www.sparkfun.com/products/13996)- Teensy Prop Shield LC
+* [13995](https://www.sparkfun.com/products/13995)- Teensy Prop Shield
 
 Version History
 ---------------

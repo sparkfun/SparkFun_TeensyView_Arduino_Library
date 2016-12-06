@@ -1,19 +1,26 @@
 /******************************************************************************
-<filename>
-<Title>
-<name @ SparkFun Electronics>
-<original creation date>
-<github repository address>
+TeensyViewAudio.ino
+Example using the TeensyView with the Teensy Audio board
 
-<multiline verbose description of file functionality>
+Marshall Taylor @ SparkFun Electronics, December 6, 2016
+https://github.com/sparkfun/SparkFun_TeensyView_Arduino_Library
+
+This is modified FFT example software.  It passes L/R audio channels to the
+headphone output while displaying the FFTs as a bar graph on the OLED, with
+CPU usage reports.
+
+Compatible with:
+Teensy 3.1 + Teensy Audio Board
+Teensy 3.2 + Teensy Audio Board
+Teensy 3.5 + Teensy Audio Board
+Teensy 3.6 + Teensy Audio Board
 
 Resources:
-<additional library requirements>
+Requires the Teensy Audio library
 
 Development environment specifics:
-<arduino/development environment version>
-<hardware version>
-<etc>
+Arduino IDE 1.6.12
+TeensyView v1.0
 
 This code is released under the [MIT License](http://opensource.org/licenses/MIT).
 
@@ -48,27 +55,18 @@ const int myInput = AUDIO_INPUT_LINEIN;
 
 
 
-#include "TeensyView.h"  // Include the SFE_MicroOLED library
+#include "TeensyView.h"  // Include the TeensyView library
 
 //////////////////////////////////
-// MicroOLED Object Declaration //
+// TeensyView Object Declaration //
 //////////////////////////////////
-
-////Default SPI connections
-//#define PIN_RESET 6  // Connect RST to pin 6
-//#define PIN_DC    5  // Connect DC to pin 5
-//#define PIN_CS    10 // Connect CS to pin 10
-//#define PIN_SCK   13 // Connect SCK to pin 13
-//#define PIN_MOSI  11 // Connect MOSI to pin 11
-
-//Alternate SPI connections
 #define PIN_RESET 2  // Connect RST to pin 2
 #define PIN_DC    21  // Connect DC to pin 21
 #define PIN_CS    20 // Connect CS to pin 20
 #define PIN_SCK   14 // Connect SCK to pin 14
 #define PIN_MOSI  7  // Connect MOSI to pin 7
 
-MicroOLED oled(PIN_RESET, PIN_DC, PIN_CS, PIN_SCK, PIN_MOSI);
+TeensyView oled(PIN_RESET, PIN_DC, PIN_CS, PIN_SCK, PIN_MOSI);
 
 void setup()
 {
@@ -101,8 +99,8 @@ void setup()
 unsigned long last_time = millis();
 uint8_t overlayCounter = 0;
 float lastLoopTime = 0;
-float lastCPU = 0;
-float lastMem = 0;
+uint16_t lastCPU = 0;
+uint16_t lastMem = 0;
 
 float leftBands[40] = {
 0,0,0,0,0,0,0,0,0,0,
@@ -136,8 +134,10 @@ void loop()
 	if(overlayCounter > 20)
 	{
 		lastLoopTime = loopTime;
-		lastCPU = AudioProcessorUsage();
-		lastMem = AudioMemoryUsage();
+		lastCPU = AudioProcessorUsageMax();
+		AudioProcessorUsageMaxReset();
+		lastMem = AudioMemoryUsageMax();
+		AudioMemoryUsageMaxReset();
 
 		overlayCounter = 0;
 	}
@@ -166,12 +166,12 @@ void loop()
 	oled.print((uint8_t)lastLoopTime);
 	oled.print("ms");
 	//  Teensy Audio info
-	oled.setCursor(79,0);
+	oled.setCursor(91,0);
 	oled.print("cpu=");
-	oled.print(lastCPU, 2);
+	oled.print(lastCPU);
 	oled.setCursor(91,8);
 	oled.print("mem=");
-	oled.print(lastMem, 0);
+	oled.print(lastMem);
 	//  L/R letters
 	oled.setCursor(15,24);
 	oled.print("L");
