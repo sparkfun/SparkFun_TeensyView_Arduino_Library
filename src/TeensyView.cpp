@@ -22,7 +22,8 @@ option) any later version.
 *****This file defines the hardware interface(s) for the TeensyView.*****
 
 Development environment specifics:
-Arduino IDE 1.6.12
+Arduino IDE 1.6.12 w/ Teensyduino 1.31
+Arduino IDE 1.8.1 w/ Teensyduino 1.35
 TeensyView v1.0
 
 This program is distributed in the hope that it will be useful,

@@ -10,16 +10,17 @@ headphone output while displaying the FFTs as a bar graph on the OLED, with
 CPU usage reports.
 
 Compatible with:
-Teensy 3.1 + Teensy Audio Board
-Teensy 3.2 + Teensy Audio Board
-Teensy 3.5 + Teensy Audio Board
+Teensy 3.1 + Teensy Audio Board (100% processor usage)
+Teensy 3.2 + Teensy Audio Board (100% processor usage)
+Teensy 3.5 + Teensy Audio Board 
 Teensy 3.6 + Teensy Audio Board
 
 Resources:
 Requires the Teensy Audio library
 
 Development environment specifics:
-Arduino IDE 1.6.12
+Arduino IDE 1.6.12 w/ Teensyduino 1.31
+Arduino IDE 1.8.1 w/ Teensyduino 1.35
 TeensyView v1.0
 
 This code is released under the [MIT License](http://opensource.org/licenses/MIT).
@@ -47,24 +48,27 @@ AudioConnection          patchCord4(audioInput, 1, RightFFT, 0);
 AudioControlSGTL5000     audioShield;    //xy=467,310
 // GUItool: end automatically generated code
 
-
 const int myInput = AUDIO_INPUT_LINEIN;
 //const int myInput = AUDIO_INPUT_MIC;
-
-
-
-
 
 #include "TeensyView.h"  // Include the TeensyView library
 
 //////////////////////////////////
 // TeensyView Object Declaration //
 //////////////////////////////////
-#define PIN_RESET 2  // Connect RST to pin 2
-#define PIN_DC    21  // Connect DC to pin 21
-#define PIN_CS    20 // Connect CS to pin 20
-#define PIN_SCK   14 // Connect SCK to pin 14
-#define PIN_MOSI  7  // Connect MOSI to pin 7
+//Standard
+//#define PIN_RESET 15
+//#define PIN_DC    5
+//#define PIN_CS    10
+//#define PIN_SCK   13
+//#define PIN_MOSI  11
+
+//Alternate (Audio)
+#define PIN_RESET 2
+#define PIN_DC    21
+#define PIN_CS    20
+#define PIN_SCK   14
+#define PIN_MOSI  7
 
 TeensyView oled(PIN_RESET, PIN_DC, PIN_CS, PIN_SCK, PIN_MOSI);
 
@@ -166,7 +170,7 @@ void loop()
 	oled.print((uint8_t)lastLoopTime);
 	oled.print("ms");
 	//  Teensy Audio info
-	oled.setCursor(91,0);
+	oled.setCursor(83,0);
 	oled.print("cpu=");
 	oled.print(lastCPU);
 	oled.setCursor(91,8);

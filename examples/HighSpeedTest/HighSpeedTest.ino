@@ -19,7 +19,8 @@ Resources:
 Requires the Teensy Audio library
 
 Development environment specifics:
-Arduino IDE 1.6.12
+Arduino IDE 1.6.12 w/ Teensyduino 1.31
+Arduino IDE 1.8.1 w/ Teensyduino 1.35
 TeensyView v1.0
 
 This code is released under the [MIT License](http://opensource.org/licenses/MIT).
@@ -38,21 +39,18 @@ Distributed as-is; no warranty is given.
 // TeensyView Object Declaration //
 //////////////////////////////////
 //Standard
-#define PIN_RESET 15  // Connect RST to pin 15
-#define PIN_DC    5  // Connect DC to pin 5
-#define PIN_CS    10 // Connect CS to pin 10
-#define PIN_SCK   13 // Connect SCK to pin 13
-#define PIN_MOSI  11 // Connect MOSI to pin 11
+#define PIN_RESET 15
+#define PIN_DC    5
+#define PIN_CS    10
+#define PIN_SCK   13
+#define PIN_MOSI  11
 
-//////////////////////////////////
-// TeensyView Object Declaration //
-//////////////////////////////////
 //Alternate (Audio)
-//#define PIN_RESET 2  // Connect RST to pin 2
-//#define PIN_DC    21  // Connect DC to pin 21
-//#define PIN_CS    20 // Connect CS to pin 20
-//#define PIN_SCK   14 // Connect SCK to pin 14
-//#define PIN_MOSI  7  // Connect MOSI to pin 7
+//#define PIN_RESET 2
+//#define PIN_DC    21
+//#define PIN_CS    20
+//#define PIN_SCK   14
+//#define PIN_MOSI  7
 
 TeensyView oled(PIN_RESET, PIN_DC, PIN_CS, PIN_SCK, PIN_MOSI);
 

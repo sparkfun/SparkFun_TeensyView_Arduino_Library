@@ -85,12 +85,24 @@ uint16_t fileIndex = 0;
 
 //********************TeensyView*******************//
 #include "TeensyView.h"  // Include the SFE_TeensyView library
-//Alternate SPI connections
-#define PIN_RESET 15  // Connect RST to pin 15
-#define PIN_DC    21  // Connect DC to pin 21
-#define PIN_CS    20 // Connect CS to pin 20
-#define PIN_SCK   13 // Connect SCK to pin 13
-#define PIN_MOSI  11  // Connect MOSI to pin 11
+
+//////////////////////////////////
+// TeensyView Object Declaration //
+//////////////////////////////////
+//Standard
+#define PIN_RESET 15
+//#define PIN_DC    5
+//#define PIN_CS    10
+#define PIN_SCK   13
+#define PIN_MOSI  11
+
+//Alternate (Audio)
+//#define PIN_RESET 2
+#define PIN_DC    21
+#define PIN_CS    20
+//#define PIN_SCK   14
+//#define PIN_MOSI  7
+
 TeensyView oled(PIN_RESET, PIN_DC, PIN_CS, PIN_SCK, PIN_MOSI);
 //********************TeensyView*******************//
 
