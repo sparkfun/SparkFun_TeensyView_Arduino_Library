@@ -1,4 +1,4 @@
-SparkFun <PRODUCT NAME> Arduino Library
+SparkFun TeensyView Arduino Library
 ========================================
 
 ![SparkFun TeensyView](https://cdn.sparkfun.com/assets/parts/1/1/8/8/0/14113-07.jpg)
