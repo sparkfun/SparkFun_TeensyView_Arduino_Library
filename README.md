@@ -45,7 +45,7 @@ Version History
 ---------------
 
 * [V_1.0.0](https://github.com/sparkfun/SparkFun_TeensyView_Arduino_Library/tree/V_1.0.0) - Public release
-* [V_1.1.0](https://github.com/sparkfun/SparkFun_TeensyView/V_1.1.0) - Added clock rate setter and template example
+* [V_1.1.0](https://github.com/sparkfun/SparkFun_TeensyView_Arduino_Library/tree/V_1.1.0) - Added clock rate setter and template example
 
 License Information
 -------------------
