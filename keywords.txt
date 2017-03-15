@@ -1,0 +1,93 @@
+########################################################
+# Syntax Coloring Map for SparkFun LSM6DS3 IMU Library #
+########################################################
+# Class
+###################################################################
+
+TeensyView	KEYWORD1
+
+###################################################################
+# Methods and Functions
+###################################################################
+
+begin	KEYWORD2
+write	KEYWORD2
+command	KEYWORD2
+data	KEYWORD2
+setColumnAddress	KEYWORD2
+setPageAddress	KEYWORD2
+clear	KEYWORD2
+invert	KEYWORD2
+contrast	KEYWORD2
+display	KEYWORD2
+setCursor	KEYWORD2
+pixel	KEYWORD2
+line	KEYWORD2
+lineH	KEYWORD2
+lineV	KEYWORD2
+rect	KEYWORD2
+rectFill	KEYWORD2
+circle	KEYWORD2
+circleFill	KEYWORD2
+drawChar	KEYWORD2
+drawBitmap	KEYWORD2
+getLCDWidth	KEYWORD2
+getLCDHeight	KEYWORD2
+setColor	KEYWORD2
+setDrawMode	KEYWORD2
+getScreenBuffer	KEYWORD2
+getFontWidth	KEYWORD2
+getFontHeight	KEYWORD2
+getTotalFonts	KEYWORD2
+getFontType	KEYWORD2
+setFontType	KEYWORD2
+getFontStartChar	KEYWORD2
+getFontTotalChar	KEYWORD2
+scrollRight	KEYWORD2
+scrollLeft	KEYWORD2
+scrollVertRight	KEYWORD2
+scrollVertLeft	KEYWORD2
+scrollStop	KEYWORD2
+flipVertical	KEYWORD2
+flipHorizontal	KEYWORD2
+
+###################################################################
+# Constants
+###################################################################
+
+BLACK	LITERAL1
+WHITE	LITERAL1
+NORM	LITERAL1
+XOR	LITERAL1
+PAGE	LITERAL1
+ALL	LITERAL1
+SETCONTRAST	LITERAL1
+DISPLAYALLONRESUME	LITERAL1
+DISPLAYALLON	LITERAL1
+NORMALDISPLAY	LITERAL1
+INVERTDISPLAY	LITERAL1
+DISPLAYOFF	LITERAL1
+DISPLAYON	LITERAL1
+SETDISPLAYOFFSET	LITERAL1
+SETCOMPINS	LITERAL1
+SETVCOMDESELECT	LITERAL1
+SETDISPLAYCLOCKDIV	LITERAL1
+SETPRECHARGE	LITERAL1
+SETMULTIPLEX	LITERAL1
+SETLOWCOLUMN	LITERAL1
+SETHIGHCOLUMN	LITERAL1
+SETSTARTLINE	LITERAL1
+MEMORYMODE	LITERAL1
+COMSCANINC	LITERAL1
+COMSCANDEC	LITERAL1
+SEGREMAP	LITERAL1
+CHARGEPUMP	LITERAL1
+EXTERNALVCC	LITERAL1
+SWITCHCAPVCC	LITERAL1
+ACTIVATESCROLL	LITERAL1
+DEACTIVATESCROLL	LITERAL1
+SETVERTICALSCROLLAREA	LITERAL1
+RIGHTHORIZONTALSCROLL	LITERAL1
+LEFT_HORIZONTALSCROLL	LITERAL1
+VERTICALRIGHTHORIZONTALSCROLL	LITERAL1
+VERTICALLEFTHORIZONTALSCROLL	LITERAL1

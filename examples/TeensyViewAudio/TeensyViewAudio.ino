@@ -1,34 +1,34 @@
 /******************************************************************************
-TeensyViewAudio.ino
-Example using the TeensyView with the Teensy Audio board
+  TeensyViewAudio.ino
+  Example using the TeensyView with the Teensy Audio board
 
-Marshall Taylor @ SparkFun Electronics, December 6, 2016
-https://github.com/sparkfun/SparkFun_TeensyView_Arduino_Library
+  Marshall Taylor @ SparkFun Electronics, December 6, 2016
+  https://github.com/sparkfun/SparkFun_TeensyView_Arduino_Library
 
-This is modified FFT example software.  It passes L/R audio channels to the
-headphone output while displaying the FFTs as a bar graph on the OLED, with
-CPU usage reports.
+  This is modified FFT example software.  It passes L/R audio channels to the
+  headphone output while displaying the FFTs as a bar graph on the OLED, with
+  CPU usage reports.
 
-Compatible with:
-Teensy 3.1 + Teensy Audio Board (100% processor usage)
-Teensy 3.2 + Teensy Audio Board (100% processor usage)
-Teensy 3.5 + Teensy Audio Board 
-Teensy 3.6 + Teensy Audio Board
+  Compatible with:
+  Teensy 3.1 + Teensy Audio Board (100% processor usage)
+  Teensy 3.2 + Teensy Audio Board (100% processor usage)
+  Teensy 3.5 + Teensy Audio Board
+  Teensy 3.6 + Teensy Audio Board
 
-Resources:
-Requires the Teensy Audio library
+  Resources:
+  Requires the Teensy Audio library
 
-Development environment specifics:
-Arduino IDE 1.6.12 w/ Teensyduino 1.31
-Arduino IDE 1.8.1 w/ Teensyduino 1.35
-TeensyView v1.0
+  Development environment specifics:
+  Arduino IDE 1.6.12 w/ Teensyduino 1.31
+  Arduino IDE 1.8.1 w/ Teensyduino 1.35
+  TeensyView v1.0
 
-This code is released under the [MIT License](http://opensource.org/licenses/MIT).
+  This code is released under the [MIT License](http://opensource.org/licenses/MIT).
 
-Please review the LICENSE.md file included with this example. If you have any questions 
-or concerns with licensing, please contact techsupport@sparkfun.com.
+  Please review the LICENSE.md file included with this example. If you have any questions
+  or concerns with licensing, please contact techsupport@sparkfun.com.
 
-Distributed as-is; no warranty is given.
+  Distributed as-is; no warranty is given.
 ******************************************************************************/
 #include <Audio.h>
 #include <Wire.h>
@@ -51,11 +51,11 @@ AudioControlSGTL5000     audioShield;    //xy=467,310
 const int myInput = AUDIO_INPUT_LINEIN;
 //const int myInput = AUDIO_INPUT_MIC;
 
-#include "TeensyView.h"  // Include the TeensyView library
+#include <TeensyView.h>  // Include the TeensyView library
 
-//////////////////////////////////
+///////////////////////////////////
 // TeensyView Object Declaration //
-//////////////////////////////////
+///////////////////////////////////
 //Standard
 //#define PIN_RESET 15
 //#define PIN_DC    5
@@ -74,30 +74,30 @@ TeensyView oled(PIN_RESET, PIN_DC, PIN_CS, PIN_SCK, PIN_MOSI);
 
 void setup()
 {
-	// Set up audio stuff:
-	// Audio connections require memory to work.  For more
-	// detailed information, see the MemoryAndCpuUsage example
-	AudioMemory(20);
-	
-	// Enable the audio shield and set the output volume.
-	audioShield.enable();
-	audioShield.inputSelect(myInput);
-	audioShield.volume(0.5); //Pass-through volume
-	
-	// Configure the window algorithm to use
-	LeftFFT.windowFunction(AudioWindowHanning1024);
-	RightFFT.windowFunction(AudioWindowHanning1024);
+  // Set up audio stuff:
+  // Audio connections require memory to work.  For more
+  // detailed information, see the MemoryAndCpuUsage example
+  AudioMemory(20);
 
-	//Initialize the OLED
-	oled.begin();
-	// clear(ALL) will clear out the OLED's graphic memory.
-	// clear(PAGE) will clear the Arduino's display buffer.
-	oled.clear(ALL);  // Clear the display's memory (gets rid of artifacts)
-	// To actually draw anything on the display, you must call the
-	// display() function. 
-	oled.display(); 
-	// Give the splash screen some time to shine
-	delay(2000);  
+  // Enable the audio shield and set the output volume.
+  audioShield.enable();
+  audioShield.inputSelect(myInput);
+  audioShield.volume(0.5); //Pass-through volume
+
+  // Configure the window algorithm to use
+  LeftFFT.windowFunction(AudioWindowHanning1024);
+  RightFFT.windowFunction(AudioWindowHanning1024);
+
+  //Initialize the OLED
+  oled.begin();
+  // clear(ALL) will clear out the OLED's graphic memory.
+  // clear(PAGE) will clear the Arduino's display buffer.
+  oled.clear(ALL);  // Clear the display's memory (gets rid of artifacts)
+  // To actually draw anything on the display, you must call the
+  // display() function.
+  oled.display();
+  // Give the splash screen some time to shine
+  delay(2000);
 }
 
 unsigned long last_time = millis();
@@ -107,94 +107,94 @@ uint16_t lastCPU = 0;
 uint16_t lastMem = 0;
 
 float leftBands[40] = {
-0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 float RightBands[40] = {
-0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 void loop()
 {
-	float loopTime;
-	int i;
+  float loopTime;
+  int i;
 
-	//calc loopTime
-	unsigned long this_time = millis();
-	if(this_time > last_time)
-	{
-		loopTime = (this_time - last_time);
-	}
-	last_time = this_time;
+  //calc loopTime
+  unsigned long this_time = millis();
+  if (this_time > last_time)
+  {
+    loopTime = (this_time - last_time);
+  }
+  last_time = this_time;
 
-	//Update data every 20 frames for readability
-	overlayCounter++;
-	if(overlayCounter > 20)
-	{
-		lastLoopTime = loopTime;
-		lastCPU = AudioProcessorUsageMax();
-		AudioProcessorUsageMaxReset();
-		lastMem = AudioMemoryUsageMax();
-		AudioMemoryUsageMaxReset();
+  //Update data every 20 frames for readability
+  overlayCounter++;
+  if (overlayCounter > 20)
+  {
+    lastLoopTime = loopTime;
+    lastCPU = AudioProcessorUsageMax();
+    AudioProcessorUsageMaxReset();
+    lastMem = AudioMemoryUsageMax();
+    AudioMemoryUsageMaxReset();
 
-		overlayCounter = 0;
-	}
-	
-	//Draw a frame
-	oled.clear(PAGE);
+    overlayCounter = 0;
+  }
 
-	//Draw left bands
-	for(i = 0; i < 40; i++)
-	{
-		if(leftBands[i] > 0.5) leftBands[i] = 0.25;
-		oled.line(62 - i, 31, 62 - i, 31 - (leftBands[i] * 127));
-	}
+  //Draw a frame
+  oled.clear(PAGE);
 
-	//Draw Right bands
-	for(i = 0; i < 40; i++)
-	{
-		if(RightBands[i] > 0.5) RightBands[i] = 0.25;
-		oled.line(65 + i, 31, 65 + i, 31 - (RightBands[i] * 127));
-	}
-	
-	//Overlay info
-	//  loop time
-	oled.setCursor(0,0);
-	oled.print("Loop=");
-	oled.print((uint8_t)lastLoopTime);
-	oled.print("ms");
-	//  Teensy Audio info
-	oled.setCursor(83,0);
-	oled.print("cpu=");
-	oled.print(lastCPU);
-	oled.setCursor(91,8);
-	oled.print("mem=");
-	oled.print(lastMem);
-	//  L/R letters
-	oled.setCursor(15,24);
-	oled.print("L");
-	oled.setCursor(108, 24);
-	oled.print("R");
+  //Draw left bands
+  for (i = 0; i < 40; i++)
+  {
+    if (leftBands[i] > 0.5) leftBands[i] = 0.25;
+    oled.line(62 - i, 31, 62 - i, 31 - (leftBands[i] * 127));
+  }
 
-	if (LeftFFT.available()) {
-		// each time new FFT data is available
-		for (i=0; i<40; i++) {
-			leftBands[i] = LeftFFT.read(i);
-		}
-	}
-	if (RightFFT.available()) {
-		// each time new FFT data is available
-		for (i=0; i<40; i++) {
-			RightBands[i] = RightFFT.read(i);
-		}
-	}
+  //Draw Right bands
+  for (i = 0; i < 40; i++)
+  {
+    if (RightBands[i] > 0.5) RightBands[i] = 0.25;
+    oled.line(65 + i, 31, 65 + i, 31 - (RightBands[i] * 127));
+  }
 
-	oled.display();   
+  //Overlay info
+  //  loop time
+  oled.setCursor(0, 0);
+  oled.print("Loop=");
+  oled.print((uint8_t)lastLoopTime);
+  oled.print("ms");
+  //  Teensy Audio info
+  oled.setCursor(83, 0);
+  oled.print("cpu=");
+  oled.print(lastCPU);
+  oled.setCursor(91, 8);
+  oled.print("mem=");
+  oled.print(lastMem);
+  //  L/R letters
+  oled.setCursor(15, 24);
+  oled.print("L");
+  oled.setCursor(108, 24);
+  oled.print("R");
+
+  if (LeftFFT.available()) {
+    // each time new FFT data is available
+    for (i = 0; i < 40; i++) {
+      leftBands[i] = LeftFFT.read(i);
+    }
+  }
+  if (RightFFT.available()) {
+    // each time new FFT data is available
+    for (i = 0; i < 40; i++) {
+      RightBands[i] = RightFFT.read(i);
+    }
+  }
+
+  oled.display();
 
 }

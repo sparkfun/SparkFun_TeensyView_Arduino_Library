@@ -48,17 +48,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define LCDWIDTH			128
 #define LCDHEIGHT			32
+#define LCDMEMORYSIZE		( LCDWIDTH * LCDHEIGHT / 8 )
+
 #define FONTHEADERSIZE		6
+// The font header size is the first bytes of the static const unsigned char space that are not data.
+// They are defined in the font files.
+//   first row defines - FONTWIDTH, FONTHEIGHT, ASCII START CHAR, TOTAL CHARACTERS, FONT MAP WIDTH HIGH, FONT MAP WIDTH LOW (2,56 meaning 256)
 
 #define NORM				0
 #define XOR					1
 
 #define PAGE				0
 #define ALL					1
-
-#define WIDGETSTYLE0			0
-#define WIDGETSTYLE1			1
-#define WIDGETSTYLE2			2
 
 #define SETCONTRAST 		0x81
 #define DISPLAYALLONRESUME 	0xA4
@@ -121,6 +122,7 @@ public:
 	TeensyView(uint8_t rst, uint8_t dc, uint8_t cs, uint8_t sck, uint8_t mosi);
 	
 	void begin(void);
+	void setClockRate( uint32_t );
 	virtual size_t write(uint8_t);
 
 	// RAW LCD functions
@@ -189,6 +191,7 @@ private:
 	uint8_t foreColor,drawMode,fontWidth, fontHeight, fontType, fontStartChar, fontTotalChar, cursorX, cursorY;
 	uint16_t fontMapWidth;
 	static const unsigned char *fontsPointer[];
+	uint32_t clockRateSetting;
 	
 	// Communication (Defined in hardware.cpp)
 	void spiTransfer(byte data);

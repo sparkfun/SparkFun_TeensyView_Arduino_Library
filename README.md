@@ -5,7 +5,7 @@ SparkFun TeensyView Arduino Library
 
 [*SparkFun TeensyView (LCD-14048)*](https://www.sparkfun.com/products/14048)
 
-This is a modified microOLED library designed for TeensyDuino.
+This is a modified microOLED library designed for Teensyduino.
 
 Repository Contents
 -------------------
@@ -26,21 +26,26 @@ Documentation
 Products that use this Library 
 ---------------------------------
 
-* [14048](https://www.sparkfun.com/products/14048) - TeensyView product.
-* [13305](https://www.sparkfun.com/products/13305) - Teensy LC
-* [13736](https://www.sparkfun.com/products/13736) - Teensy 3.2
-* [14055](https://www.sparkfun.com/products/14055) - Teensy 3.5
-* [14057](https://www.sparkfun.com/products/14057) - Teensy 3.6
-* [12767](https://www.sparkfun.com/products/12767) - Teensy Audio Board
-* [13311](https://www.sparkfun.com/products/13311) - Teensy 3.1 XBee Adapter
-* [13925](https://www.sparkfun.com/products/13925) - Teensy Header Kit
-* [13996](https://www.sparkfun.com/products/13996) - Teensy Prop Shield LC
-* [13995](https://www.sparkfun.com/products/13995) - Teensy Prop Shield
+* [LCD-14048](https://www.sparkfun.com/products/14048) - TeensyView product.
+
+Compatible products
+---------------------------------
+
+* [DEV-13305](https://www.sparkfun.com/products/13305) - Teensy LC
+* [DEV-13736](https://www.sparkfun.com/products/13736) - Teensy 3.2
+* [DEV-14055](https://www.sparkfun.com/products/14055) - Teensy 3.5
+* [DEV-14057](https://www.sparkfun.com/products/14057) - Teensy 3.6
+* [DEV-12767](https://www.sparkfun.com/products/12767) - Teensy Audio Board
+* [BOB-13311](https://www.sparkfun.com/products/13311) - Teensy 3.1 XBee Adapter
+* [PRT-13925](https://www.sparkfun.com/products/13925) - Teensy Header Kit
+* [DEV-13996](https://www.sparkfun.com/products/13996) - Teensy Prop Shield LC
+* [DEV-13995](https://www.sparkfun.com/products/13995) - Teensy Prop Shield
 
 Version History
 ---------------
 
 * [V_1.0.0](https://github.com/sparkfun/SparkFun_TeensyView_Arduino_Library/tree/V_1.0.0) - Public release
+* [V_1.1.0](https://github.com/sparkfun/SparkFun_TeensyView/V_1.1.0) - Added clock rate setter and template example
 
 License Information
 -------------------

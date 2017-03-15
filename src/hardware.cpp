@@ -64,7 +64,7 @@ void TeensyView::spiSetup()
 **/
 void TeensyView::spiTransfer(byte data)
 {
-	SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+	SPI.beginTransaction(SPISettings(clockRateSetting, MSBFIRST, SPI_MODE0));
     digitalWrite(csPin, LOW);
 	SPI.transfer(data);	
     digitalWrite(csPin, HIGH);
