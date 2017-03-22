@@ -47,10 +47,14 @@ void TeensyView::spiSetup()
 	// Initialize the pins:
 	pinMode(csPin, OUTPUT);	// CS is an OUTPUT
 	digitalWrite(csPin, HIGH);	// Start CS High
-	
+#ifdef __AVR__
+	//No alternate spi pins
+#else
 	//Do alt pin assignment
 	SPI.setMOSI(mosiPin);
 	SPI.setSCK(sckPin);
+#endif
+	
 	
 	SPI.begin();
 	
