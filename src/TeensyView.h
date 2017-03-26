@@ -39,7 +39,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define TEENSYVIEW_H
 
 #include <stdio.h>
-#include <Arduino.h>
+
+#ifdef __cplusplus
+#include "Arduino.h"
+#include <SPI.h>
+#include <SPIN.h>
+#include <DMAChannel.h>
+
+#endif
 
 #define swap(a, b) { uint8_t t = a; a = b; b = t; }
 
@@ -126,8 +133,8 @@ public:
 	virtual size_t write(uint8_t);
 
 	// RAW LCD functions
-	void command(uint8_t c);
-	void data(uint8_t c);
+	void command(uint8_t c, boolean last=1);
+	void data(uint8_t c, boolean last=0);
 	void setColumnAddress(uint8_t add);
 	void setPageAddress(uint8_t add);
 	
@@ -184,10 +191,10 @@ public:
 	
 private:
 	uint8_t csPin, dcPin, rstPin, sckPin, mosiPin;
-	volatile uint8_t *wrport, *wrreg, *rdport, *rdreg;
-	uint8_t wrpinmask, rdpinmask;
-	volatile uint8_t *ssport, *dcport, *ssreg, *dcreg;	// use volatile because these are fixed location port address
-	uint8_t mosipinmask, sckpinmask, sspinmask, dcpinmask;
+//	volatile uint8_t *wrport, *wrreg, *rdport, *rdreg;
+//	uint8_t wrpinmask, rdpinmask;
+//	volatile uint8_t *ssport, *dcport, *ssreg, *dcreg;	// use volatile because these are fixed location port address
+//	uint8_t mosipinmask, sckpinmask, sspinmask, dcpinmask;
 	uint8_t foreColor,drawMode,fontWidth, fontHeight, fontType, fontStartChar, fontTotalChar, cursorX, cursorY;
 	uint16_t fontMapWidth;
 	static const unsigned char *fontsPointer[];
@@ -196,5 +203,153 @@ private:
 	// Communication (Defined in hardware.cpp)
 	void spiTransfer(byte data);
 	void spiSetup();
+
+	// Stuff added to switch to using SPIN
+	uint8_t _pcs_data, _pcs_command;
+    volatile uint8_t *_csport, *_dcport;
+    uint8_t _cspinmask, _dcpinmask;
+
+
+
+ 	SPINClass *_pspin;
+#ifdef KINETISK	
+ 	KINETISK_SPI_t *_pkinetisk_spi;
+#endif
+#ifdef KINETISL
+ 	KINETISL_SPI_t *_pkinetisl_spi;
+#endif	
+ 	// Inline helper functions
+	void beginSPITransaction() __attribute__((always_inline)) {
+		if (_pspin) {
+			_pspin->beginTransaction(SPISettings(clockRateSetting, MSBFIRST, SPI_MODE0));
+		} else {
+			SPI.beginTransaction(SPISettings(clockRateSetting, MSBFIRST, SPI_MODE0));
+		}
+		if (_csport)
+			*_csport  &= ~_cspinmask;
+	}
+	void endSPITransaction() __attribute__((always_inline)) {
+		if (_csport)
+			*_csport |= _cspinmask;
+		if (_pspin) {
+			_pspin->endTransaction();
+		} else {
+			SPI.endTransaction();
+		}
+	}
+
+
+#ifdef KINETISK	
+	// Always use on TLC, only use on T3.x if DC pin is not on hardware CS pin
+	uint8_t _dcpinAsserted;
+	void setCommandMode() __attribute__((always_inline)) {
+		if (!_dcpinAsserted) {
+			*_dcport  &= ~_dcpinmask;
+			_dcpinAsserted = 1;
+		}
+	}
+
+	void setDataMode() __attribute__((always_inline)) {
+		if (_dcpinAsserted) {
+			*_dcport  |= _dcpinmask;
+			_dcpinAsserted = 0;
+		}
+	}
+	void writecommand_cont(uint8_t c) __attribute__((always_inline)) {
+		if (!_pcs_data) setCommandMode();
+		_pkinetisk_spi->PUSHR = c | (_pcs_command << 16) | SPI_PUSHR_CTAS(0) | SPI_PUSHR_CONT;
+		_pspin->waitFifoNotFull();
+	}
+	void writedata8_cont(uint8_t c) __attribute__((always_inline)) {
+		if (!_pcs_data) setDataMode();
+		_pkinetisk_spi->PUSHR = c | (_pcs_data << 16) | SPI_PUSHR_CTAS(0) | SPI_PUSHR_CONT;
+		_pspin->waitFifoNotFull();
+	}
+	void writedata16_cont(uint16_t d) __attribute__((always_inline)) {
+		if (!_pcs_data) setDataMode();
+		_pkinetisk_spi->PUSHR = d | (_pcs_data << 16) | SPI_PUSHR_CTAS(1) | SPI_PUSHR_CONT;
+		_pspin->waitFifoNotFull();
+	}
+	void writecommand_last(uint8_t c) __attribute__((always_inline)) {
+		if (!_pcs_data) setCommandMode();
+		uint32_t mcr = _pkinetisk_spi->MCR;
+		_pkinetisk_spi->PUSHR = c | (_pcs_command << 16) | SPI_PUSHR_CTAS(0) | SPI_PUSHR_EOQ;
+		_pspin->waitTransmitComplete(mcr);
+	}
+	void writedata8_last(uint8_t c) __attribute__((always_inline)) {
+		if (!_pcs_data) setDataMode();
+		uint32_t mcr = _pkinetisk_spi->MCR;
+		_pkinetisk_spi->PUSHR = c | (_pcs_data << 16) | SPI_PUSHR_CTAS(0) | SPI_PUSHR_EOQ;
+		_pspin->waitTransmitComplete(mcr);
+	}
+	void writedata16_last(uint16_t d) __attribute__((always_inline)) {
+		if (!_pcs_data) setDataMode();
+		uint32_t mcr = _pkinetisk_spi->MCR;
+		_pkinetisk_spi->PUSHR = d | (_pcs_data << 16) | SPI_PUSHR_CTAS(1) | SPI_PUSHR_EOQ;
+		_pspin->waitTransmitComplete(mcr);
+	}
+#endif
+#ifdef KINETISL
+	uint8_t _data_sent_not_completed;
+	void waitTransmitComplete() __attribute__((always_inline)) {
+		if (_data_sent_not_completed) {
+			uint8_t timeout_count = 0xff; // hopefully enough 
+			while (!(_pkinetisl_spi->S & SPI_S_SPRF) && timeout_count--) ; // wait 
+			uint8_t d __attribute__((unused));
+			d = _pkinetisl_spi->DL;
+			_data_sent_not_completed = false; // We hopefully received our data...
+		}
+	}
+
+	// Always use on TLC
+	uint8_t _dcpinAsserted;
+	void setCommandMode() __attribute__((always_inline)) {
+		if (!_dcpinAsserted) {
+			waitTransmitComplete();
+			*_dcport  &= ~_dcpinmask;
+			_dcpinAsserted = 1;
+		}
+	}
+
+	void setDataMode() __attribute__((always_inline)) {
+		if (_dcpinAsserted) {
+			waitTransmitComplete();
+			*_dcport  |= _dcpinmask;
+			_dcpinAsserted = 0;
+		}
+	}
+
+	void outputToSPI(uint8_t c)  __attribute__((always_inline)) {
+		while (!(_pkinetisl_spi->S & SPI_S_SPTEF)) ; // wait if output buffer busy.
+		// Clear out buffer if there is something there...
+		if  ((_pkinetisl_spi->S & SPI_S_SPRF)) {
+			uint8_t d __attribute__((unused));
+			d = _pkinetisl_spi->DL;
+		} 
+		_pkinetisl_spi->DL = c; // output byte
+		_data_sent_not_completed = 1; // let system know we sent something	
+	}
+
+	void writecommand_cont(uint8_t c) __attribute__((always_inline)) {
+		setCommandMode();
+		outputToSPI(c);
+	}
+	void writedata8_cont(uint8_t c) __attribute__((always_inline)) {
+		setDataMode();
+		outputToSPI(c);
+	}
+
+	void writecommand_last(uint8_t c) __attribute__((always_inline)) {
+		setCommandMode();
+		outputToSPI(c);
+		waitTransmitComplete();
+	}
+	void writedata8_last(uint8_t c) __attribute__((always_inline)) {
+		setDataMode();
+		outputToSPI(c);
+		waitTransmitComplete();
+	}
+#endif
+
 };
 #endif

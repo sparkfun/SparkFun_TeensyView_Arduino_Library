@@ -93,7 +93,7 @@ static uint8_t screenmemory [LCDMEMORYSIZE] =
 // ROW3, BYTE384 to BYTE511
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
-
+#define LAST_SCREEN_DATA (&screenmemory [LCDMEMORYSIZE-1])
 /** \brief TeensyView Constructor -- SPI Mode
 
 	Setup the TeensyView class, configure the display to be controlled via a
@@ -107,7 +107,6 @@ TeensyView::TeensyView(uint8_t rst, uint8_t dc, uint8_t cs, uint8_t sck, uint8_t
 	csPin = cs;
 	sckPin = sck;
 	mosiPin = mosi;
-	
 	clockRateSetting = 1000000;//Default rate of 1 MHz
 }
 
@@ -144,6 +143,7 @@ void TeensyView::begin()
 	digitalWrite(rstPin, HIGH);	// Set RST HIGH, bring out of reset
 
 	// Display Init sequence for 64x48 OLED module
+	beginSPITransaction();
 	command(DISPLAYOFF);			// 0xAE
 
 	command(SETDISPLAYCLOCKDIV);	// 0xD5
@@ -185,6 +185,7 @@ void TeensyView::begin()
 	//command(0x00);
 	
 	command(DISPLAYON);				//--turn on oled panel
+	endSPITransaction();			// Actually clear will handle this as well
 	clear(ALL);						// Erase hardware memory inside the OLED controller to avoid random data in memory.
 }
 
@@ -195,10 +196,19 @@ void TeensyView::begin()
 	to send the data. For I2C and Parallel we use the write functions
 	defined in hardware.cpp to send the data.
 */
-void TeensyView::command(uint8_t c) {
-
-	digitalWrite(dcPin, LOW);;	// DC pin LOW for a command
-	spiTransfer(c);			// Transfer the command byte
+void TeensyView::command(uint8_t c, boolean last) {
+#if defined(KINETISK) || defined(KINETISL)
+	if (_pspin) {
+		if (last)
+			writecommand_last(c);
+		else	
+			writecommand_cont(c);
+	} else 
+#endif
+	{
+		digitalWrite(dcPin, LOW);;	// DC pin LOW for a command
+		spiTransfer(c);			// Transfer the command byte
+	}
 }
 
 /** \brief Send the display a data byte
@@ -208,10 +218,19 @@ void TeensyView::command(uint8_t c) {
 	to send the data. For I2C and Parallel we use the write functions
 	defined in hardware.cpp to send the data.
 */
-void TeensyView::data(uint8_t c) {
-
-	digitalWrite(dcPin, HIGH);	// DC HIGH for a data byte
-	spiTransfer(c); 		// Transfer the data byte
+void TeensyView::data(uint8_t c, boolean last) {
+#if defined(KINETISK) || defined(KINETISL)
+	if (_pspin) {
+		if (last)
+			writedata8_last(c);
+		else	
+			writedata8_cont(c);
+	} else 
+#endif
+	{
+		digitalWrite(dcPin, HIGH);	// DC HIGH for a data byte
+		spiTransfer(c); 		// Transfer the data byte
+	}
 }
 
 /** \brief Set SSD1306 page address.
@@ -220,7 +239,7 @@ void TeensyView::data(uint8_t c) {
 */
 void TeensyView::setPageAddress(uint8_t add) {
 	add=0xb0|add;
-	command(add);
+	command(add, false);
 	return;
 }
 
@@ -231,9 +250,9 @@ void TeensyView::setPageAddress(uint8_t add) {
 void TeensyView::setColumnAddress(uint8_t add) {
 	//command((0x10|(add>>4))+0x02);
 	//command((0x0f&add));
-	command(0x21);
-	command(add & 0x7F);
-	command(0x7F);
+	command(0x21, false);
+	command(add & 0x7F, false);
+	command(0x7F, _pcs_command? false : true);  // If we are doing ds, lets have this one wait until complete before we continue
 	
 	return;
 }
@@ -243,7 +262,11 @@ void TeensyView::setColumnAddress(uint8_t add) {
     To clear GDRAM inside the LCD controller, pass in the variable mode = ALL and to clear screen page buffer pass in the variable mode = PAGE.
 */
 void TeensyView::clear(uint8_t mode) {
+#if 1
+	clear(mode, 0);
+#else
 	if (mode==ALL) {
+		beginSPITransaction();
 		for (int i=0;i<8; i++) {
 			setPageAddress(i);
 			setColumnAddress(0);
@@ -251,12 +274,14 @@ void TeensyView::clear(uint8_t mode) {
 				data(0);
 			}
 		}
+		endSPITransaction();
 	}
 	else
 	{
 		memset(screenmemory,0,LCDMEMORYSIZE);			// write zeros on MCU side buffer
 		//display();
 	}
+#endif	
 }
 
 /** \brief Clear or replace screen buffer or SSD1306's memory with a character.
@@ -265,13 +290,18 @@ void TeensyView::clear(uint8_t mode) {
 */
 void TeensyView::clear(uint8_t mode, uint8_t c) {
 	if (mode==ALL) {
+		beginSPITransaction();
 		for (int i=0;i<8; i++) {
 			setPageAddress(i);
 			setColumnAddress(0);
 			for (int j=0; j<0x80; j++) {
-				data(c);
+				if ((j == (LCDWIDTH-1)) && (!_pcs_command || (i==7)))
+					data(c, true);
+				else
+					data(c, false);
 			}
 		}
+		endSPITransaction();
 	}
 	else
 	{
@@ -285,10 +315,12 @@ void TeensyView::clear(uint8_t mode, uint8_t c) {
     The WHITE color of the display will turn to BLACK and the BLACK will turn to WHITE.
 */
 void TeensyView::invert(boolean inv) {
+	beginSPITransaction();
 	if (inv)
-	command(INVERTDISPLAY);
+		command(INVERTDISPLAY, true);
 	else
-	command(NORMALDISPLAY);
+		command(NORMALDISPLAY, true);
+	endSPITransaction();
 }
 
 /** \brief Set contrast.
@@ -296,8 +328,10 @@ void TeensyView::invert(boolean inv) {
     OLED contract value from 0 to 255. Note: Contrast level is not very obvious.
 */
 void TeensyView::contrast(uint8_t contrast) {
-	command(SETCONTRAST);			// 0x81
-	command(contrast);
+	beginSPITransaction();
+	command(SETCONTRAST, false);			// 0x81
+	command(contrast, true);
+	endSPITransaction();
 }
 
 /** \brief Transfer display memory.
@@ -306,24 +340,33 @@ void TeensyView::contrast(uint8_t contrast) {
 */
 void TeensyView::display(void) {
 	uint8_t i, j;
+	uint8_t *pscreen_data = screenmemory; 
 
+	beginSPITransaction();
 	for (i=0; i<(LCDHEIGHT/8); i++) {
 		setPageAddress(i);
 		setColumnAddress(0);
 		for (j=0;j<LCDWIDTH;j++) {
-			data(screenmemory[i*LCDWIDTH+j]);
+			if ((!_pcs_command && (j == (LCDWIDTH-1))) || (pscreen_data == LAST_SCREEN_DATA))
+				data(*pscreen_data, true);
+			else
+				data(*pscreen_data, false);
+			pscreen_data++;
 		}
 	}
+	endSPITransaction();
 }
 
 void TeensyView::display(uint8_t i) {
 	uint8_t j;
 
+	beginSPITransaction();
 	setPageAddress(i);
 	setColumnAddress(0);
 	for (j=0;j<LCDWIDTH;j++) {
 		data(screenmemory[i*LCDWIDTH+j]);
 	}
+	endSPITransaction();
 }
 
 /** \brief Override Arduino's Print.
@@ -787,7 +830,9 @@ void  TeensyView::drawChar(uint8_t x, uint8_t y, uint8_t c, uint8_t color, uint8
     Stop the scrolling of graphics on the OLED.
 */
 void TeensyView::scrollStop(void){
-	command(DEACTIVATESCROLL);
+	beginSPITransaction();
+	command(DEACTIVATESCROLL, true);
+	endSPITransaction();
 }
 
 /** \brief Right scrolling.
@@ -798,14 +843,16 @@ void TeensyView::scrollRight(uint8_t start, uint8_t stop){
 	if (stop<start)		// stop must be larger or equal to start
 	return;
 	scrollStop();		// need to disable scrolling before starting to avoid memory corrupt
-	command(RIGHTHORIZONTALSCROLL);
-	command(0x00);
-	command(start);
-	command(0x7);		// scroll speed frames , TODO
-	command(stop);
-	command(0x00);
-	command(0xFF);
-	command(ACTIVATESCROLL);
+	beginSPITransaction();
+	command(RIGHTHORIZONTALSCROLL, false);
+	command(0x00, false);
+	command(start, false);
+	command(0x7, false);		// scroll speed frames , TODO
+	command(stop, false);
+	command(0x00, false);
+	command(0xFF, false);
+	command(ACTIVATESCROLL, true);
+	endSPITransaction();
 }
 
 /** \brief Vertical flip.
@@ -813,12 +860,14 @@ void TeensyView::scrollRight(uint8_t start, uint8_t stop){
 Flip the graphics on the OLED vertically.
 */
 void TeensyView::flipVertical(boolean flip) {
+	beginSPITransaction();
 	if (flip) {
 		command(COMSCANINC);
 	}
 	else {
 		command(COMSCANDEC);
 	}
+	endSPITransaction();
 }
 
 /** \brief Horizontal flip.
@@ -826,12 +875,14 @@ void TeensyView::flipVertical(boolean flip) {
     Flip the graphics on the OLED horizontally.
 */
 void TeensyView::flipHorizontal(boolean flip) {
+	beginSPITransaction();
 	if (flip) {
 		command(SEGREMAP | 0x0);
 	}
 	else {
 		command(SEGREMAP | 0x1);
 	}
+	endSPITransaction();
 }
 
 /*
