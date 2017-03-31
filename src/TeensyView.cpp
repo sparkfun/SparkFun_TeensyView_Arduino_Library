@@ -107,7 +107,7 @@ TeensyView::TeensyView(uint8_t rst, uint8_t dc, uint8_t cs, uint8_t sck, uint8_t
 	csPin = cs;
 	sckPin = sck;
 	mosiPin = mosi;
-	clockRateSetting = 1000000;//Default rate of 1 MHz
+	clockRateSetting = 8000000;//Default rate of 8 MHz
 }
 
 //Set a non-default clock rate.  Run this before begin if alt rate is desired.
